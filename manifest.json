@@ -1,0 +1,39 @@
+{
+    "manifest_version": 2,
+    "name": "Modalyst Products Importer",
+    "short_name": "Modalyst Products Importer",
+    "version": "1.1",
+    "description": "Adds all products to import list from https://modalyst.co products page",
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "icons": {
+        "16": "logo_16x16.png",
+        "48": "logo_48x48.png",
+        "128": "logo_128x128.png"
+    },
+    "page_action": {
+        "default_title": "Modalyst Bulk Product Importer",
+        "default_icon": {                    
+            "16": "logo_16x16.png",           
+            "24": "logo_24x24.png",           
+            "32": "logo_32x32.png"            
+        },      
+        "default_popup": "index.html"        
+    },
+    "content_scripts": [
+        {
+            "matches" : ["https://modalyst.co/explore/*"],
+            "js": [
+                "jquery.js", 
+                "underscore.js", 
+                "q.js", 
+                "content-script.js"
+            ]
+        }
+    ],
+    "permissions" : [
+        "declarativeContent", "tabs"
+    ]
+}
