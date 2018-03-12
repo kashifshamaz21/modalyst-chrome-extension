@@ -41,7 +41,7 @@ body {
     margin-bottom: 20px;
 }
 
-.job-status, .items-count, .pages-count {
+.job-status, .items-count, .pages-count, .current-page, .items-remaining {
     visibility: visible;
     width: 200px;
     height: 24px;
@@ -56,13 +56,14 @@ body {
     color: blue;
 }
 
-.items-count, .pages-count {
+.items-count, .pages-count, .current-page, .items-remaining {
     font-weight: bold;
 }
 
-.pages-count {
+.current-page {
     margin-bottom: 10px;
     border-bottom: 1px solid #cccccc;
+    color: green;
 }
 
 .import-items-button { 

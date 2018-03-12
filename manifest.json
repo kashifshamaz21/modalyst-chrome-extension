@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Modalyst Products Importer",
     "short_name": "Modalyst Products Importer",
-    "version": "1.1",
+    "version": "1.2",
     "description": "Adds all products to import list from https://modalyst.co products page",
     "background": {
         "scripts": ["background.js"],

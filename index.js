@@ -73,12 +73,15 @@ function changeJobStatus( msg ) {
     case "stats":
       $(".items-count").removeClass("visibility-hidden").text("Total Items: " + msg.totalProductsCount);
       $(".pages-count").removeClass("visibility-hidden").text("Total Pages: " + msg.totalProductPages);
+      $(".items-remaining").removeClass("visibility-hidden").text("Items to Import: " + msg.totalProductsFromCurrent);
+      $(".current-page").removeClass("visibility-hidden").text("Current Page: " + msg.startPageNumber);
       break;
 
     case "importing":
       progress = msg.percentageImported + "%";
 
       $(".cancel-import-items-button").removeClass("visibility-hidden");
+      $(".current-page").removeClass("visibility-hidden").text("Current Page: " + msg.currentPageNumber);
       $(".job-status").removeClass("visibility-hidden").text("Imported: " + msg.productsImported + " items");
       $(".import-items-button").removeClass("active  ").addClass("importing").attr('data-importing', progress);;
       $(".progress-bar").removeClass(" completed").addClass("importing").width(progress);

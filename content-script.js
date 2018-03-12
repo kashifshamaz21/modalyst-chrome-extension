@@ -7,7 +7,7 @@
 
 //globals
 
-var port, totalProducts, totalPages, currentPageNumber, importSuccessTimers = {}, productsImported = [], finalData;
+var port, totalProducts, totalPages, startPageNumber, currentPageNumber, importSuccessTimers = {}, productsImported = [], finalData;
 var currentState = "init";
 var productItems = [], totalItemsOnCurrentPage, itemIdsOnCurrentPage = [], deferred;
 var membersProcessed = 0, percentageScrolled, percentageImported;
@@ -21,6 +21,8 @@ $(document).ready(function() {
 //listeners for messages from background.js
 function setUpCommunication() {
     
+    console.log('setting up listeners for Incoming port connection');
+
     chrome.runtime.onConnect.addListener(function(receivedPort) {
         console.log("Received Incoming Port connection from background.js: " + receivedPort.name);
 
@@ -64,6 +66,9 @@ function scrapeTotalProductsCount() {
 
         if(!_.isNaN(totalProducts)) {
             totalPages = Math.ceil(totalProducts / 60);
+            startPageNumber = parseInt($('.step-links b.current').text(), 10);            
+            totalProductsFromCurrent = totalProducts - (startPageNumber - 1) * 60;
+
             console.log('Total pages: ' + totalPages);
             // Update Extension UI with this info
             postMessage({ type: 'stats' });
@@ -80,24 +85,13 @@ function toggleFilterElements(disable) {
     } else {
         $('.filteroptions input').removeAttr("disabled");
         $('#item_search input, select').removeAttr("disabled");
-    }
-    
+    }    
 }
 
 function startImportJob() {
     currentPageNumber = parseInt($('.step-links b.current').text(), 10);
     toggleFilterElements(true);
-
-    if(currentPageNumber !== 1) {
-        
-        currentPageNumber = 1;
-
-        loadPage(currentPageNumber).then(function() {
-            importProducts(currentPageNumber);
-        });
-    } else {
-        importProducts(currentPageNumber);
-    }
+    importProducts(currentPageNumber);
 }
 
 function importProducts(currentPageNum) {
@@ -175,7 +169,7 @@ function importProductsOnPage(itemIndex) {
         $('html')[0].scrollTop = $(item).offset().top - 180;
         $(item).find('.detail-overlay').css('opacity', 1);
 
-        if($(this).find('.detail-overlay .css-icon-eye').length === 0) {
+        if($(item).find('.detail-overlay .css-icon-eye').length === 0) {
             $(item).find('.detail-overlay .add-button').click();
         }
         importSuccessTimers[itemId] = window.setInterval(_.bind(function() {
@@ -185,7 +179,7 @@ function importProductsOnPage(itemIndex) {
                                             return style && style.replace(/opacity[^;]+;?/g, '');
                                         });
                                         productsImported.push($(this).attr('id'));
-                                        percentageImported = calculateProgress( productsImported.length, totalProducts );
+                                        percentageImported = calculateProgress( productsImported.length, totalProductsFromCurrent );
                                         postMessage({type: msgType });
                                         window.clearInterval(importSuccessTimers[$(this).attr('id')]);
 
@@ -202,6 +196,9 @@ function importProductsOnPage(itemIndex) {
 function reset() {
     productsImported = [];
     currentState = "init";
+    _.each(importSuccessTimers, function(timerId, itemIndex, list) {
+        window.clearInterval(timerId);
+    });
 }
 
 //utility
@@ -227,11 +224,15 @@ function postMessage(msg) {
                 port.postMessage({ type: msgType });
                 break;
             case 'stats':
-                port.postMessage({ type: msgType, totalProductsCount: totalProducts, totalProductPages: totalPages });
+                port.postMessage({ type: msgType, 
+                                   totalProductsCount: totalProducts, 
+                                   totalProductPages: totalPages, 
+                                   startPageNumber: startPageNumber,
+                                   totalProductsFromCurrent: totalProductsFromCurrent });
                 break;
             case 'importing':
                 console.log('Sending progress to Extension: ' + percentageImported);
-                port.postMessage({type: msgType, productsImported: productsImported.length, percentageImported: percentageImported });
+                port.postMessage({type: msgType, productsImported: productsImported.length, percentageImported: percentageImported, currentPageNumber: currentPageNumber });
                 break;
             case 'completed':
                 port.postMessage({type: msgType, productsImported: productsImported.length, percentageImported: percentageImported });
